@@ -35,7 +35,7 @@ pipeline {
             }
             steps {
                 sh 'docker build -t easybuggyapplication:$DOCKER_TAG .'
-                sh 'docker tag -t easybuggyapplication:$DOCKER_TAG easybuggyapplication:latest'
+                sh 'docker tag easybuggyapplication:$DOCKER_TAG easybuggyapplication:latest'
             }
         }
     }
