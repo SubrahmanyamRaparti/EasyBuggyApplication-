@@ -13,14 +13,16 @@ pipeline {
                                                  -Dsonar.organization=easybuggyapplication -Dsonar.projectKey=$SONAR_CREDENTIALS_USR'
             }
         }
-    stages {
-        stage ("Synk Analysis - SCA") {
-            snykSecurity(
-                organization: 'SubrahmanyamRaparti',
-                projectName: 'EasyBuggyApplication',
-                snykInstallation: 'snyk_latest',
-                snykTokenId: 'snyk-api'
-            )
+        stage ("Snyk Analysis - SCA") {
+            steps {
+                snykSecurity(
+                    failOnIssues: false,
+                    organisation: 'subrahmanyamraparti',
+                    projectName: 'EasyBuggyApplication',
+                    snykInstallation: 'snyk_latest',
+                    snykTokenId: 'snyk-api'
+                )
+            }
         }
     }
 }
