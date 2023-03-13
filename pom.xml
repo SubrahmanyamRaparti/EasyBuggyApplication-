@@ -135,8 +135,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -165,29 +165,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-   <groupId>org.owasp</groupId>
-   <artifactId>dependency-check-maven</artifactId>
-   <version>6.1.6</version>
-   <configuration>
-      <format>ALL</format>
-      <!--    <failBuildOnCVSS>8</failBuildOnCVSS>
-   
-   
-			      use internal mirroring of CVE contents 
-			      Suppress files 
-			      E.g. a company-wide suppression file and local project file 
-			     -->
-      <!-- 
-			     <cveUrlModified>http://internal-mirror.mycorp.com/nvdcve-1.1-modified.json.gz</cveUrlModified>  
-			                    <cveUrlBase>http://internal-mirror.mycorp.com/nvdcve-1.1-%d.json.gz</cveUrlBase>
-			     <suppressionFiles>               
-			                        <suppressionFile>http://example.org/suppression.xml</suppressionFile>
-			                        <suppressionFile>project-suppression.xml</suppressionFile> 
-			                    </suppressionFiles> 
-			                 -->
-   </configuration>
-</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
@@ -213,7 +190,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.1</version>
+				<version>2.6</version>
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 					<warName>ROOT</warName>
@@ -302,19 +279,6 @@
 					</execution>
 				</executions>
 			</plugin>
-<!-- Synk Changes for SCA Starts Here -->
-    <plugin>
-      <groupId>io.snyk</groupId>
-      <artifactId>snyk-maven-plugin</artifactId>
-      <version>2.0.0</version>
-      <inherited>false</inherited>
-      <configuration>
-        <args>
-          <arg>--org=SubrahmanyamRaparti</arg>
-        </args>
-      </configuration>
-    </plugin>
-<!-- Snyk Changes for SCA Ends Here -->
 		</plugins>
 		<pluginManagement>
 			<plugins>
