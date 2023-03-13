@@ -24,5 +24,24 @@ pipeline {
                 )
             }
         }
+        stage ("Build & Verify") {
+            steps {
+                sh 'mvn -B clean verify'  // Lifecycles: validate, compile, test, package, verify
+            }
+        }
+        stage ("Build Docker Image") {
+            environment {
+                DOCKER_TAG = committag()
+            }
+            steps {
+                sh 'docker build -t easybuggyapplication:$DOCKER_TAG .'
+                sh 'docker tag easybuggyapplication:$DOCKER_TAG easybuggyapplication:latest'
+            }
+        }
     }
+}
+
+def committag() {
+    def tag = sh returnStdout: true, script: 'git rev-parse --short HEAD'
+    return tag
 }
