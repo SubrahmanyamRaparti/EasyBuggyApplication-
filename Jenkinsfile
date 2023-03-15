@@ -3,6 +3,11 @@ pipeline {
     tools {
         maven 'mvn_v3.9.0'
     }
+    environment {
+        AWS_REGION = getregion()
+        AWS_ACCOUNT_ID = getaccount()
+        DOCKER_TAG = committag()
+    }
     stages {
         stage ("Sonar Cloud Analysis - SAST") {
             environment {
@@ -30,12 +35,17 @@ pipeline {
             }
         }
         stage ("Build Docker Image") {
-            environment {
-                DOCKER_TAG = committag()
-            }
             steps {
-                sh 'docker build -t easybuggyapplication:$DOCKER_TAG .'
-                sh 'docker tag easybuggyapplication:$DOCKER_TAG easybuggyapplication:latest'
+                sh 'docker build --compress -t easybuggyapplication:latest .'
+                sh 'docker tag easybuggyapplication:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/easybuggyapplication:latest'
+                sh 'docker tag easybuggyapplication:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/easybuggyapplication:$DOCKER_TAG'
+            }
+        }
+        stage ("Push Docker Image to AWS ECR") {
+            steps {
+                sh 'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com'
+                sh 'docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/easybuggyapplication:latest'
+                sh 'docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/easybuggyapplication:$DOCKER_TAG'
             }
         }
     }
@@ -44,4 +54,14 @@ pipeline {
 def committag() {
     def tag = sh returnStdout: true, script: 'git rev-parse --short HEAD'
     return tag
+}
+
+def getregion() {
+    def region = sh returnStdout: true, script: 'curl -s  http://169.254.169.254/latest/meta-data/placement/region'
+    return region
+}
+
+def getaccount() {
+    def account = sh returnStdout: true, script: 'aws sts get-caller-identity | jq ".Account" -r'
+    return account.replaceAll("\\s","")
 }
