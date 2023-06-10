@@ -1,0 +1,173 @@
+---
+  - name: "Install Jenkins"
+    hosts: jenkins
+    become: yes
+    vars:
+      - services:
+          - jenkins
+          - docker
+    tasks:
+      - block:
+        -
+          # sudo yum update -y
+          name: Update all packages
+          yum:
+            name: '*'
+            update_only: true
+            update_cache: true
+            state: latest
+        -
+          # sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+          # sudo wget -O /tmp/ https://github.com/zaproxy/zaproxy/releases/download/v2.12.0/ZAP_2_12_0_unix.sh
+          name: Download Jenkins repository & ZAP OWASP
+          get_url:
+            url: "{{ item.url }}"
+            dest: "{{ item.dest }}"
+            mode: '0744'
+          with_items:
+            - { url: 'https://pkg.jenkins.io/redhat-stable/jenkins.repo', dest: '/etc/yum.repos.d/jenkins.repo' }
+            - { url: 'https://github.com/zaproxy/zaproxy/releases/download/v2.12.0/ZAP_2_12_0_unix.sh', dest: '/tmp/' }
+        -
+          # sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+          name: Import Jenkins key
+          rpm_key:
+            state: present
+            key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        - 
+          # sudo yum upgrade -y
+          name: Upgrade & install
+          yum:
+            name: '*'
+            update_cache: false
+            state: latest
+        - 
+          # sudo amazon-linux-extras install java-openjdk11 -y
+          name: Install Java 11
+          command: amazon-linux-extras install java-openjdk11 -y
+        - 
+          # yum install jenkins git docker jq unzip -y
+          name: Install packages
+          yum:
+            name:
+              - jenkins
+              - git
+              - docker
+              - jq
+              - unzip
+            state: latest
+        - 
+          # sudo systemctl start jenkins.service
+          name: Start Jenkins/Docker and enable at boot
+          systemd:
+            state: started
+            name: "{{ item }}"
+            enabled: true
+            masked: no
+          with_items: "{{ services }}"
+        - 
+          # sudo newgrp docker
+          name: Ensure group docker exists
+          group:
+            name: docker
+            state: present
+        - 
+          # sudo usermod -aG docker jenkins/ec2-user
+          name: Add users to docker group
+          user:
+            name: "{{ item }}"
+            group: docker
+          with_items:
+              - "{{ ansible_user }}"
+              - jenkins
+        - 
+          # sudo service jenkins restart
+          name: Restart jenkins service
+          service:
+            name: jenkins
+            state: restarted
+        -
+          # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          # curl "https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl" -o "kubectl"
+          # curl "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" -o "eksctl.tar.gz"
+          name: Get aws cli version 2, kubectl & eksctl
+          uri:
+            url: "{{ item.url }}"
+            method: GET
+            dest: "{{ item.dest }}"
+            creates: "{{ item.dest }}"
+            mode: '0700'
+          with_items:
+            - { url: 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip', dest: '/tmp/awscliv2.zip' }
+            - { url: 'https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl', dest: '/tmp/kubectl' }
+            - { url: 'https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_Linux_amd64.tar.gz', dest: '/tmp/eksctl.tar.gz' }
+        -
+          # unzip awscliv2.zip
+          name: Extract awscli zip to user {{ansible_user}} home location
+          unarchive:
+            src: "{{ item.src }}"
+            dest: "{{ item.dest }}" 
+            remote_src: yes
+          with_items:
+            - { src: '/tmp/awscliv2.zip', dest: '/tmp/' }
+            - { src: '/tmp/eksctl.tar.gz', dest: '/usr/local/bin' }
+        - 
+          name: Install awscli
+          command: /tmp/aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+        - 
+          name: Install ZAP
+          command: /tmp/ZAP_2_12_0_unix.sh -q
+        - 
+          # mkdir -p $HOME/bin
+          name: Create bin directory in user {{ansible_user}} home location
+          file:
+            path: /home/{{ansible_user}}/bin
+            state: directory
+            owner: "{{ansible_user}}"
+            group: "{{ansible_user}}"
+            mode: '0744'
+        - 
+          name: Copy kubectl file to user bin directory
+          copy:
+            src: /tmp/kubectl
+            dest: "{{ item.dest }}"
+            owner: "{{ item.name }}"
+            group: "{{ item.name }}"
+            mode: '0744'
+            remote_src: yes
+          with_items:
+            - { name: "{{ansible_user}}", dest: '/home/{{ansible_user}}/bin' }
+            - { name: 'root', dest: '/usr/local/bin/' }
+        -
+          # export PATH=$PATH:$HOME/bin
+          name: Adding the path in the {{ansible_user}}'s .bashrc
+          lineinfile: 
+            dest: /home/{{ansible_user}}/.bashrc 
+            line: 'export PATH=$PATH:$HOME/bin'
+            insertafter: 'EOF'
+            state: present
+        - 
+          # sudo systemctl daemon-reload
+          name: Reload daemon
+          systemd:
+            daemon-reload: yes
+        -
+          name: Clean up cache
+          command: yum clean all
+        - 
+          name: Delete yum cache files
+          file:
+            path: /var/cache/yum
+            state: absent
+        - 
+          name: collect facts about system services
+          service_facts:
+          register: services_state
+        -
+          name: Display the status of the services
+          debug:
+            var: services_state.ansible_facts.services['{{item}}.service'].state
+          with_items: "{{ services }}"
+        - 
+          name: Rebooting the server to load the configuration
+          reboot:
+        when: ansible_facts['os_family'] == "RedHat"
