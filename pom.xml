@@ -21,7 +21,10 @@
 		<jvm.args.number.of.gc.log.files>-XX:NumberOfGCLogFiles=5</jvm.args.number.of.gc.log.files>
 		<jvm.args.gc.log.file.size>-XX:GCLogFileSize=10M</jvm.args.gc.log.file.size>
 	</properties>
-
+	<properties>
+	  <sonar.organization>subrahmanyam</sonar.organization>
+	  <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+	</properties>
 	<profiles>
 		<profile>
 			<id>JDK8-Switch</id>
