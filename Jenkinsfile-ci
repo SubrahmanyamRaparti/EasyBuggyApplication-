@@ -1,9 +1,9 @@
 pipeline {
     agent any
-    // Using Docker images instead of downloading the tools.
-    // tools {
-    //     maven 'mvn_v3.9.2'
-    // }
+    // Using maven tool for SCA.
+    tools {
+        maven 'mvn_v3.9.2'
+    }
     environment {
         AWS_REGION = getregion()
         AWS_ACCOUNT_ID = getaccount()
