@@ -1,35 +1,51 @@
 pipeline {
     agent any
-    tools {
-        maven 'mvn_v3.9.0'
-    }
+    // Using Docker images instead of downloading the tools.
+    // tools {
+    //     maven 'mvn_v3.9.2'
+    // }
     environment {
         AWS_REGION = getregion()
         AWS_ACCOUNT_ID = getaccount()
         DOCKER_TAG = committag()
     }
     stages {
+        // stage ("Source code checkout") {
+        //     steps {
+        //         git branch: 'main', url: 'https://github.com/SubrahmanyamRaparti/EasyBuggyApplication.git'
+        //     }
+        // }
         stage ("Sonar Cloud Analysis - SAST") {
+            agent {
+                docker { image 'maven:3-amazoncorretto-11' }
+            }
             environment {
                 SONAR_CREDENTIALS = credentials('sonar_credentials')
             }
             steps {
-                sh 'mvn clean verify sonar:sonar -Dsonar.login=$SONAR_CREDENTIALS_PSW -Dsonar.host.url=https://sonarcloud.io \
-                                                 -Dsonar.organization=easybuggyapplication -Dsonar.projectKey=$SONAR_CREDENTIALS_USR'
+                sh 'mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                        -Dsonar.login=$SONAR_CREDENTIALS_PSW \
+                        -Dsonar.host.url=https://sonarcloud.io \
+                        -Dsonar.organization=subrahmanyam \
+                        -Dsonar.projectKey=$SONAR_CREDENTIALS_USR'
             }
         }
         stage ("Snyk Analysis - SCA") {
             steps {
                 snykSecurity(
                     failOnIssues: false,
+                    failOnError: true,
                     organisation: 'subrahmanyamraparti',
                     projectName: 'EasyBuggyApplication',
                     snykInstallation: 'snyk_latest',
-                    snykTokenId: 'snyk-api'
+                    snykTokenId: 'snyk_api'
                 )
             }
         }
         stage ("Build & Verify") {
+            agent {
+                docker { image 'maven:3-amazoncorretto-11' }
+            }
             steps {
                 sh 'mvn -B clean verify'  // Lifecycles: validate, compile, test, package, verify
             }
