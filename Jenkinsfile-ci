@@ -1,9 +1,9 @@
 pipeline {
     agent any
-    // Using Docker images instead of downloading the tools.
-    // tools {
-    //     maven 'mvn_v3.9.2'
-    // }
+    // Using maven tool for SCA.
+    tools {
+        maven 'mvn_v3.9.2'
+    }
     environment {
         AWS_REGION = getregion()
         AWS_ACCOUNT_ID = getaccount()
@@ -17,7 +17,9 @@ pipeline {
         // }
         stage ("Sonar Cloud Analysis - SAST") {
             agent {
-                docker { image 'maven:3-amazoncorretto-11' }
+                docker { image 'maven:3-amazoncorretto-11'
+                reuseNode true
+                }
             }
             environment {
                 SONAR_CREDENTIALS = credentials('sonar_credentials')
@@ -44,7 +46,9 @@ pipeline {
         }
         stage ("Build & Verify") {
             agent {
-                docker { image 'maven:3-amazoncorretto-11' }
+                docker { image 'maven:3-amazoncorretto-11'
+                reuseNode true
+                }
             }
             steps {
                 sh 'mvn -B clean verify'  // Lifecycles: validate, compile, test, package, verify
