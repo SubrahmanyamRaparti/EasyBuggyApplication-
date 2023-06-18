@@ -27,7 +27,7 @@ metadata:
   name: easybuggyapplication
   namespace: easybuggyapplication
 spec:
-  replicas: <number_of_replicas>
+  replicas: ${APP_REPLICAS}
   selector:
     matchLabels:
       app: easybuggyapplication
@@ -39,7 +39,7 @@ spec:
         app: easybuggyapplication
     spec:
       containers:
-      - image: <ecr_image>
+      - image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/easybuggyapplication:${DOCKER_TAG}
         name: easybuggyapplication
         ports:
         - containerPort: 8080

@@ -8,6 +8,8 @@ pipeline {
         AWS_REGION = getregion()
         AWS_ACCOUNT_ID = getaccount()
         DOCKER_TAG = committag()
+        APP_REPLICAS = 2
+        NAMESPACE_NAME = "easybuggyapplication"
     }
     stages {
         // stage ("Source code checkout") {
@@ -70,8 +72,17 @@ pipeline {
         }
         stage ("Deploy image on to kubernetes"){
             steps {
-                withKubeConfig(credentialsId: 'kubernetes_key', namespace: 'easybuggyapplication', restrictKubeConfigAccess: true) {
-                    sh 'kubectl create namespace easybuggyapplication || true'
+                withKubeConfig(credentialsId: 'kubernetes_key', namespace: 'easybuggyapplication', restrictKubeConfigAccess: true, serverUrl: 'https://172.31.12.214:6443') {
+                    sh 'kubectl create namespace ${NAMESPACE_NAME} || true'
+                    sh 'kubectl create secret docker-registry regcred \
+                          --docker-server=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com \
+                          --docker-username=AWS \
+                          --docker-password=$(aws ecr get-login-password) \
+                          --namespace=${NAMESPACE_NAME} || true'
+                    sh 'sed -i "s/<aws_account_id>/$AWS_ACCOUNT_ID/g" ./k8s-manifest-files/ecr-credentials.yaml'
+                    sh 'sed -i "s/<aws_region>/$AWS_REGION/g" ./k8s-manifest-files/ecr-credentials.yaml'
+                    sh 'envsubst < ./k8s-manifest-files/application-manifest.yaml.tpl > ./k8s-manifest-files/application-manifest.yaml'
+                    sh 'kubectl apply -f ./k8s-manifest-files/.'
                 }
             }
         }
