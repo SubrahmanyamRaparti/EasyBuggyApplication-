@@ -68,6 +68,13 @@ pipeline {
                 sh 'docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/easybuggyapplication:$DOCKER_TAG'
             }
         }
+        stage ("Deploy image on to kubernetes"){
+            steps {
+                withKubeConfig(credentialsId: 'kubernetes_key', namespace: 'easybuggyapplication', restrictKubeConfigAccess: true) {
+                    sh 'kubectl create namespace easybuggyapplication || true'
+                }
+            }
+        }
     }
 }
 
