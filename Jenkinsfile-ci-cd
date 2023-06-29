@@ -77,7 +77,7 @@ pipeline {
                 sh 'docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/easybuggyapplication:$DOCKER_TAG'
             }
         }
-        stage ("Deploy image on to kubernetes"){
+        stage ("Deploy image on to kubernetes") {
             steps {
                 withKubeConfig(credentialsId: 'kubernetes_key', namespace: 'easybuggyapplication', restrictKubeConfigAccess: true, serverUrl: 'https://172.31.12.214:6443') {
                     sh 'kubectl create namespace ${NAMESPACE_NAME} || true'
@@ -91,6 +91,13 @@ pipeline {
                     sh 'envsubst < ./k8s-manifest-files/application-manifest.yaml.tpl > ./k8s-manifest-files/application-manifest.yaml'
                     sh 'kubectl apply -f ./k8s-manifest-files/.'
                 }
+            }
+        }
+        stage ("Clean up local docker images") {
+            steps {
+                sh 'docker image rm easybuggyapplication:latest'
+                sh 'docker image rm $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/easybuggyapplication:latest'
+                sh 'docker image rm $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/easybuggyapplication:$DOCKER_TAG'
             }
         }
     }
