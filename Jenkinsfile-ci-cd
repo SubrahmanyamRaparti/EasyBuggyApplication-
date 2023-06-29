@@ -12,6 +12,13 @@ pipeline {
         NAMESPACE_NAME = "easybuggyapplication"
     }
     stages {
+        stage ("Clean Workspace") {
+            steps{
+                script {
+                    cleanWs()
+                }
+            }
+        }
         // stage ("Source code checkout") {
         //     steps {
         //         git branch: 'main', url: 'https://github.com/SubrahmanyamRaparti/EasyBuggyApplication.git'
