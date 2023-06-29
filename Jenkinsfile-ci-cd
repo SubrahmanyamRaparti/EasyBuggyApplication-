@@ -26,7 +26,7 @@ pipeline {
         }
         stage ("Sonar Cloud Analysis - SAST") {
             agent {
-                docker { image 'maven:3-amazoncorretto-11'
+                docker { image 'maven:3.9.2-amazoncorretto-11'
                 reuseNode true
                 }
             }
@@ -55,7 +55,7 @@ pipeline {
         }
         stage ("Build & Verify") {
             agent {
-                docker { image 'maven:3-amazoncorretto-11'
+                docker { image 'maven:3.9.2-amazoncorretto-11'
                 reuseNode true
                 }
             }
