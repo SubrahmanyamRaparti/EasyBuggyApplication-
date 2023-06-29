@@ -11,7 +11,7 @@ data "aws_caller_identity" "current" {}
 # A Linux server for Jenkins to RUN.
 module "aws_instance" {
   source                 = "git::https://github.com/SubrahmanyamRaparti/Terraform.git//terraform-aws-ec2"
-  instance_type          = "t3.small"
+  instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.aws_security_group.id]
   key_name               = var.key_name
   name                   = "Jenkins Server"
@@ -24,7 +24,7 @@ resource "null_resource" "inventory" {
   provisioner "local-exec" {
     command = "sh get_server_ip.sh"
   }
-  
+
   triggers = {
     always_run = "${timestamp()}"
   }
@@ -34,7 +34,7 @@ resource "null_resource" "inventory" {
 resource "null_resource" "playbook" {
   provisioner "local-exec" {
     command = "rm ../inventory.txt"
-    when = destroy
+    when    = destroy
   }
 }
 
