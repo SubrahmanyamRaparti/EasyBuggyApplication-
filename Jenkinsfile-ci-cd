@@ -19,11 +19,11 @@ pipeline {
                 }
             }
         }
-        // stage ("Source code checkout") {
-        //     steps {
-        //         git branch: 'main', url: 'https://github.com/SubrahmanyamRaparti/EasyBuggyApplication.git'
-        //     }
-        // }
+        stage ("Source code checkout") {
+            steps {
+                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/SubrahmanyamRaparti/easy-buggy-application.git'
+            }
+        }
         stage ("Sonar Cloud Analysis - SAST") {
             agent {
                 docker { image 'maven:3-amazoncorretto-11'
