@@ -9,8 +9,8 @@ EasyBuggy is a broken web application to understand the behavior of bugs and vul
 =================
 
 * [Easy Buggy Java Application](#easy-buggy-java-application)
-    * [Table of Contents](#table-of-contents)
     * [Overview of the project](#overview-of-the-project)
+    * [Table of Contents](#table-of-contents)
     * [Project structure](#project-structure)
 * [Tools used](#tools-used)
 * [Installation and project setup](#installation-and-project-setup)
@@ -58,14 +58,14 @@ Some explanations regarding structure:
 - `dockerfile` is used by the Jenkins pipeline to build images with the source code build artifact.
 
 ## **Tools used**
-- Git
-- Jenkins (CI/CD)
-- Ansible (Configuration)
-- Maven (Build Java artifacts)
-- SonarQube - SonarCloud (Source code analysis)
-- Snyk (Source composition analysis)
-- Docker (Build images)
-- Kubernetes (Container orchestration)
+- [Git](https://git-scm.com/docs)
+- [Jenkins (CI/CD)](https://www.jenkins.io/doc/book/pipeline/)
+- [Ansible (Configuration)](https://docs.ansible.com/ansible/latest/index.html)
+- [Maven (Build Java artifacts)](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html)
+- [SonarQube - SonarCloud (Source code analysis)](https://sonarcloud.io/explore/projects)
+- [Snyk (Source composition analysis)](https://snyk.io/)
+- [Docker (Build images)](https://docs.docker.com/engine/reference/commandline/docker/)
+- [Kubernetes (Container orchestration)](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 
 ## **Installation and project setup**
 
@@ -104,7 +104,7 @@ SSH onto the Jenkins server and fetch the initial password and follow the steps 
 ```
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 ```
-**NOTE** Setup a Kubernetes environment. Use [Script](https://github.com/SubrahmanyamRaparti/kubernetes/blob/main/KubernetesInstallOnEC2KubeadmWay.sh) to install the kubernetes using the Kuberadm way onto an Amazon linux server.
+**NOTE** Setup a Kubernetes environment. Use [Script](https://gist.github.com/4635760a1266a34c258b3615b050326e.git) to install the kubernetes using the Kuberadm way onto an Amazon linux server.
 
 Once the setup is complete. install the below tools & plugins.
 
