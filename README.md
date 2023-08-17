@@ -1,5 +1,4 @@
 # Easy Buggy Java Application
-
 ## **Overview of the project**
 EasyBuggy is a broken web application to understand the behavior of bugs and vulnerabilities. This repository is created to experience CI/CD knowledge and gain a good understanding of security tools.
 
